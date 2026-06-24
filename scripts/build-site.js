@@ -239,6 +239,20 @@ function shuffledImageFiles(files) {
   return shuffled;
 }
 
+let blogIllustrationImages;
+
+function getBlogIllustrationImages() {
+  if (!blogIllustrationImages) {
+    if (oldwomanImageFiles.length < blogPosts.length + 1) {
+      throw new Error(`Need at least ${blogPosts.length + 1} oldwoman images for unique blog illustrations.`);
+    }
+    const selected = shuffledImageFiles(oldwomanImageFiles).slice(0, blogPosts.length + 1);
+    blogIllustrationImages = new Map(blogPosts.map((post, index) => [post.slug, selected[index]]));
+    blogIllustrationImages.set("__blog_index_hero", selected[blogPosts.length]);
+  }
+  return blogIllustrationImages;
+}
+
 function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
 }
@@ -808,12 +822,9 @@ function buildHome() {
 }
 
 function buildBlogIndex() {
-  if (oldwomanImageFiles.length < blogPosts.length + 1) {
-    throw new Error(`Need at least ${blogPosts.length + 1} oldwoman images for unique blog index illustrations.`);
-  }
-  const blogIndexImages = shuffledImageFiles(oldwomanImageFiles).slice(0, blogPosts.length + 1);
+  const blogImages = getBlogIllustrationImages();
   const cards = blogPosts.map((post, index) => {
-    const image = `/assets/images/${blogIndexImages[index]}`;
+    const image = `/assets/images/${blogImages.get(post.slug)}`;
     return `<article class="post-card"><img src="${image}" alt="${post.title} editorial image" width="720" height="420"><p class="eyebrow">${post.eyebrow}</p><h2><a href="/blog/${post.slug}/">${post.title}</a></h2><p>${post.description}</p></article>`;
   }).join("");
   pageShell({
@@ -823,7 +834,7 @@ function buildBlogIndex() {
     eyebrow: "Guides",
     h1: "Sugar Mummy Dating Blog",
     lead: "Practical field guides for adults who want discreet, respectful, and safety-aware sugar mummy dating in Australia.",
-    image: `/assets/images/${blogIndexImages[blogPosts.length]}`,
+    image: `/assets/images/${blogImages.get("__blog_index_hero")}`,
     imageAlt: "Australia Sugar Mummy blog editorial image",
     cta: false,
     schema: pageSchema("/blog/", "Sugar Mummy Dating Blog Australia | Guides & Safety", "Read Australian sugar mummy dating guides about safety, first meetings, boundaries, profiles, scams, and mature relationship expectations.", "Sugar Mummy Dating Blog", "CollectionPage"),
@@ -832,7 +843,9 @@ function buildBlogIndex() {
 }
 
 function buildArticles() {
+  const blogImages = getBlogIllustrationImages();
   for (const post of blogPosts) {
+    const image = `/assets/images/${blogImages.get(post.slug)}`;
     pageShell({
       pathname: `/blog/${post.slug}/`,
       title: post.seoTitle || `${post.title} | ${brand}`,
@@ -840,8 +853,8 @@ function buildArticles() {
       eyebrow: post.eyebrow,
       h1: post.title,
       lead: post.lead,
-      image: post.image,
-      imageAlt: post.alt,
+      image,
+      imageAlt: `${post.title} editorial image`,
       schema: articleSchema(`/blog/${post.slug}/`, post.title, post.description),
       body: post.sections || [
         { title: "Key takeaways", type: "list", items: post.list },
