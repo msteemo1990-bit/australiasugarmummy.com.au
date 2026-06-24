@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-label="Real-time messaging icon">
+  <g fill="none" stroke="#d8744e" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M50 42h92a22 22 0 0 1 22 22v42a22 22 0 0 1-22 22h-44l-34 26v-26H50a22 22 0 0 1-22-22V64a22 22 0 0 1 22-22Z"/>
+    <path d="M78 80h62"/>
+    <path d="M78 104h38"/>
+    <path d="M172 76h18a22 22 0 0 1 22 22v22a22 22 0 0 1-22 22h-8v22l-28-22h-16"/>
+  </g>
+</svg>
