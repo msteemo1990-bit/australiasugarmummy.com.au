@@ -365,6 +365,26 @@ function escapeAttr(text) {
   return String(text).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 }
 
+function faviconLinks() {
+  return [
+    `<link rel="icon" href="/favicon.svg" type="image/svg+xml">`,
+    `<link rel="shortcut icon" href="/favicon.svg" type="image/svg+xml">`,
+    `<link rel="apple-touch-icon" href="/favicon.svg">`,
+    `<link rel="manifest" href="/site.webmanifest">`,
+    `<meta name="theme-color" content="#4b171f">`
+  ].join("\n  ");
+}
+
+function faviconSvg() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Australia Sugar Mummy logo">
+  <rect width="64" height="64" rx="14" fill="#4b171f"/>
+  <path d="M12 44h40" stroke="#d8b36a" stroke-width="3" stroke-linecap="round"/>
+  <path d="M18 20c5-6 14-6 19 0 4-4 10-5 15-2-4 3-6 8-6 14 0 3 1 7 3 10H15c2-3 3-7 3-10 0-5-2-9-6-12 2-1 4-1 6 0Z" fill="#f8efe2"/>
+  <text x="32" y="39" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="15" font-weight="700" letter-spacing="1.5" fill="#4b171f">ASM</text>
+</svg>
+`;
+}
+
 function pageShell({ pathname, title, description, eyebrow, h1, lead, image, imageAlt, body, cta = true, schema = "", imagePool = [] }) {
   const sections = body.map((section) => {
     if (section.type === "list") {
@@ -391,6 +411,7 @@ function pageShell({ pathname, title, description, eyebrow, h1, lead, image, ima
   <meta name="description" content="${escapeAttr(description)}">
   <link rel="canonical" href="${canonical(pathname)}">
   ${baseHeadExtra(pathname, title, description, "article")}
+  ${faviconLinks()}
   <link rel="stylesheet" href="/assets/template.css">
   <script src="/assets/template.js" defer></script>
   ${schema}
@@ -450,6 +471,17 @@ function authorBlock() {
 
 function buildAssets() {
   ensureDir(path.join(root, "assets/images"));
+  fs.writeFileSync(path.join(root, "favicon.svg"), faviconSvg());
+  fs.writeFileSync(path.join(root, "site.webmanifest"), JSON.stringify({
+    name: brand,
+    short_name: "ASM",
+    icons: [
+      { src: "/favicon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" }
+    ],
+    theme_color: "#4b171f",
+    background_color: "#4b171f",
+    display: "standalone"
+  }, null, 2) + "\n");
   copyFile(path.join(templateRoot, "assets/template.css"), path.join(root, "assets/template.css"));
   copyFile(path.join(templateRoot, "assets/template.js"), path.join(root, "assets/template.js"));
   fs.appendFileSync(path.join(root, "assets/template.css"), `
@@ -706,7 +738,7 @@ function buildHome() {
   html = html.split(`href="${registrationUrl}"`).join(`href="${registrationUrl}" rel="nofollow"`);
   html = html.replace(/<img\b(?![^>]*\balt=)([^>]*)>/g, `<img alt="${brand} dating guide image"$1>`);
   html = html.replace(/alt=""(?=[\s>])/g, `alt="${brand} dating guide image"`);
-  html = html.replace("</head>", `  ${baseHeadExtra("/", data.META_TITLE, data.META_DESCRIPTION)}\n  <script type="application/ld+json">${JSON.stringify({
+  html = html.replace("</head>", `  ${baseHeadExtra("/", data.META_TITLE, data.META_DESCRIPTION)}\n  ${faviconLinks()}\n  <script type="application/ld+json">${JSON.stringify({
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: brand,
