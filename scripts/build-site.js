@@ -416,7 +416,7 @@ function pageShell({ pathname, title, description, eyebrow, h1, lead, image, ima
   <script src="/assets/template.js" defer></script>
   ${schema}
 </head>
-<body>
+<body${pathname.startsWith("/blog/") ? ` class="blog-page"` : ""}>
   ${header()}
   <main id="main">
     <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><span>${h1}</span></nav>
@@ -545,6 +545,65 @@ function buildAssets() {
   color: #fff;
   text-decoration: none;
   font-weight: 700;
+}
+
+.blog-page .article-layout {
+  background: #fffaf5;
+  color: #21120f;
+  border-color: rgba(75, 23, 31, .24);
+  box-shadow: 0 18px 46px rgba(22, 10, 8, .16);
+}
+
+.blog-page .article-header {
+  max-width: 820px;
+  margin-inline: auto;
+  border-radius: 10px;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  background: #241412;
+  color: #fff8ef;
+}
+
+.blog-page .article-header .eyebrow {
+  color: #d8b36a;
+}
+
+.blog-page .article-header h1 {
+  color: #fff8ef;
+  text-decoration-color: rgba(216, 179, 106, .42);
+  text-shadow: none;
+}
+
+.blog-page .article-header p {
+  color: #f1dfcf;
+}
+
+.blog-page .article-body {
+  color: #2b1d18;
+}
+
+.blog-page .article-body h2,
+.blog-page .post-card h2,
+.blog-page .post-card h2 a {
+  color: #3d1218;
+}
+
+.blog-page .article-body p,
+.blog-page .article-body li,
+.blog-page .post-card p {
+  color: #3d302b;
+}
+
+.blog-page .post-card {
+  background: #fffdf9;
+  color: #21120f;
+  border-color: rgba(75, 23, 31, .22);
+  box-shadow: 0 12px 28px rgba(22, 10, 8, .12);
+}
+
+.blog-page .post-card img,
+.blog-page .article-image {
+  background: #eaded8;
+  border: 1px solid rgba(75, 23, 31, .18);
 }
 
 @media (max-width: 680px) {
@@ -749,7 +808,14 @@ function buildHome() {
 }
 
 function buildBlogIndex() {
-  const cards = blogPosts.map((post) => `<article class="post-card"><img src="${post.image}" alt="${post.alt}" width="720" height="420"><p class="eyebrow">${post.eyebrow}</p><h2><a href="/blog/${post.slug}/">${post.title}</a></h2><p>${post.description}</p></article>`).join("");
+  if (oldwomanImageFiles.length < blogPosts.length + 1) {
+    throw new Error(`Need at least ${blogPosts.length + 1} oldwoman images for unique blog index illustrations.`);
+  }
+  const blogIndexImages = shuffledImageFiles(oldwomanImageFiles).slice(0, blogPosts.length + 1);
+  const cards = blogPosts.map((post, index) => {
+    const image = `/assets/images/${blogIndexImages[index]}`;
+    return `<article class="post-card"><img src="${image}" alt="${post.title} editorial image" width="720" height="420"><p class="eyebrow">${post.eyebrow}</p><h2><a href="/blog/${post.slug}/">${post.title}</a></h2><p>${post.description}</p></article>`;
+  }).join("");
   pageShell({
     pathname: "/blog/",
     title: "Sugar Mummy Dating Blog Australia | Guides & Safety",
@@ -757,8 +823,8 @@ function buildBlogIndex() {
     eyebrow: "Guides",
     h1: "Sugar Mummy Dating Blog",
     lead: "Practical field guides for adults who want discreet, respectful, and safety-aware sugar mummy dating in Australia.",
-    image: `/assets/images/${imageMap.feature1}`,
-    imageAlt: "Australian dating guide editorial image",
+    image: `/assets/images/${blogIndexImages[blogPosts.length]}`,
+    imageAlt: "Australia Sugar Mummy blog editorial image",
     cta: false,
     schema: pageSchema("/blog/", "Sugar Mummy Dating Blog Australia | Guides & Safety", "Read Australian sugar mummy dating guides about safety, first meetings, boundaries, profiles, scams, and mature relationship expectations.", "Sugar Mummy Dating Blog", "CollectionPage"),
     body: [{ title: "Latest guides", type: "raw", html: `<div class="post-grid">${cards}</div>` }]
