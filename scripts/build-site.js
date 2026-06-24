@@ -399,7 +399,7 @@ function faviconSvg() {
 `;
 }
 
-function pageShell({ pathname, title, description, eyebrow, h1, lead, image, imageAlt, body, cta = true, schema = "", imagePool = [] }) {
+function pageShell({ pathname, title, description, eyebrow, h1, lead, image, imageAlt, body, cta = true, schema = "", imagePool = [], showImage = true }) {
   const sections = body.map((section) => {
     if (section.type === "list") {
       return `<h2>${section.title}</h2><ul>${section.items.map((item) => `<li>${item}</li>`).join("")}</ul>`;
@@ -440,7 +440,7 @@ function pageShell({ pathname, title, description, eyebrow, h1, lead, image, ima
         <h1>${h1}</h1>
         <p>${lead}</p>
       </header>
-      <img class="article-image" src="${image}" alt="${imageAlt}" width="1120" height="560"${imageAttrs}>
+      ${showImage ? `<img class="article-image" src="${image}" alt="${imageAlt}" width="1120" height="560"${imageAttrs}>` : ""}
       <div class="article-body">
         ${sections}
         ${cta ? `<div class="article-cta"><h2>Ready for a more selective introduction?</h2><p>Explore ${brand} if you value mature communication, adult boundaries, and a slower path toward real offline meetings.</p><a class="button button-primary" href="${registrationUrl}" rel="nofollow">Register Now</a></div>` : ""}
@@ -1104,7 +1104,8 @@ function buildTrustAndLegal() {
       imageAlt: `${h1} image`,
       body,
       schema: pageSchema(pathname, title, description, h1, pathname === "/about/" ? "AboutPage" : pathname === "/contact/" ? "ContactPage" : "WebPage"),
-      cta
+      cta,
+      showImage: false
     });
   }
 }
