@@ -379,6 +379,10 @@ function escapeAttr(text) {
   return String(text).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 }
 
+function escapeHtml(text) {
+  return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 function faviconLinks() {
   return [
     `<link rel="icon" href="/favicon.svg" type="image/svg+xml">`,
@@ -387,6 +391,77 @@ function faviconLinks() {
     `<link rel="manifest" href="/site.webmanifest">`,
     `<meta name="theme-color" content="#4b171f">`
   ].join("\n  ");
+}
+
+const homeFaqs = [
+  {
+    question: "What do sugar mummies want in Australia?",
+    answer: [
+      "Every sugar mummy is different, but many successful Australian women want a relationship that feels clear, discreet, and genuinely enjoyable. In Sydney, that may mean a polished companion for harbour-side dinners or gallery openings. In Melbourne, conversation, culture, and cafe confidence can matter more. In Brisbane, Perth, Adelaide, and the Gold Coast, privacy, timing, and lifestyle fit often shape the connection.",
+      "A good sugar baby brings charm, emotional intelligence, consistency, and respect rather than pressure or entitlement."
+    ]
+  },
+  {
+    question: "Are sugar mummies real in Australia?",
+    answer: [
+      "Yes. In Australia, a sugar mummy is often an established, financially independent woman who prefers to define dating on her own terms. She may be an executive, entrepreneur, senior professional, creative leader, or divorced or single woman with a full life and limited patience for vague dating apps.",
+      "The modern sugar mummy is not a stereotype. She usually values discretion, profile clarity, good manners, and a relationship dynamic that respects her time, reputation, and independence."
+    ]
+  },
+  {
+    question: "How should support and expectations be discussed with a sugar mummy?",
+    answer: [
+      "Support should be discussed respectfully, privately, and only after mutual interest is clear. Avoid pay-per-meeting language, pressure, upfront transfer requests, or any framing that makes companionship feel bought or owed.",
+      "In a healthier Australian sugar mummy connection, the conversation is about lifestyle compatibility, shared time, mentoring, generosity, boundaries, and what both adults can genuinely offer each other. Clear expectations matter, but they should never replace consent, safety, or respect."
+    ]
+  },
+  {
+    question: "How can I be a good male sugar baby in Australia?",
+    answer: [
+      "A good male sugar baby is polished, punctual, emotionally intelligent, and easy to be around. He understands when to talk, when to listen, and how to make a successful woman feel relaxed rather than managed.",
+      "Australian sugar mummies often value discretion because professional and social circles can overlap, especially in smaller cities or industry networks. Protect her privacy, dress appropriately for the setting, communicate clearly, and never treat generosity as entitlement."
+    ]
+  },
+  {
+    question: "Can women find lesbian sugar mummy connections in Australia?",
+    answer: [
+      "Yes. Sugar mummy dating in Australia can include LGBTQ+ connections, including women looking for women. The same principles apply: be honest about identity and intent, respect privacy, move at a steady pace, and choose public-first meetings until trust is established.",
+      "In cities such as Sydney and Melbourne, LGBTQ+ social scenes may feel more visible, while in smaller communities discretion can matter more. The strongest connections are built on authenticity, boundaries, and mutual respect."
+    ]
+  }
+];
+
+function renderHomeFaqSection() {
+  return `<section class="mirror-faq-section" aria-labelledby="home-faq-title">
+      <div class="mirror-faq-shell">
+        <div class="mirror-faq-intro">
+          <h2 id="home-faq-title">Sugar Mummy Dating FAQs</h2>
+          <p>Practical answers for Australia, covering expectations, privacy, support, local city rhythms, and respectful sugar mummy connections.</p>
+        </div>
+        <div class="mirror-faq-list">
+${homeFaqs.map((faq) => `          <details>
+            <summary>${escapeHtml(faq.question)}</summary>
+            <div>${faq.answer.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}</div>
+          </details>`).join("\n")}
+        </div>
+      </div>
+    </section>`;
+}
+
+function faqJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    inLanguage: "en-AU",
+    mainEntity: homeFaqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer.join(" ")
+      }
+    }))
+  };
 }
 
 function faviconSvg() {
@@ -519,6 +594,19 @@ function buildAssets() {
   border-bottom: 2px solid #b97343;
 }`
   );
+  templateCss = templateCss
+    .replace(
+      ".mirror-white-cards { width: min(1580px, 100%); margin-inline: auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(.9rem, 1.1vw, 1.25rem); align-items: start; }",
+      ".mirror-white-cards { width: min(1580px, 100%); margin-inline: auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(.9rem, 1.1vw, 1.25rem); align-items: stretch; }"
+    )
+    .replace(
+      ".mirror-white-cards article { overflow: hidden; display: grid; grid-template-rows: auto 1fr; border-radius: 12px 12px 0 0; background: #fffdf9; color: #12100f; border: 1px solid rgba(0,0,0,.45); }",
+      ".mirror-white-cards article { height: 100%; overflow: hidden; display: grid; grid-template-rows: auto 1fr; border-radius: 12px 12px 0 0; background: #fffdf9; color: #12100f; border: 1px solid rgba(0,0,0,.45); }"
+    )
+    .replace(
+      ".mirror-white-cards article > div { min-height: 500px; display: flex; flex-direction: column; align-items: flex-start; padding: clamp(1.05rem, 1.25vw, 1.45rem) clamp(1.05rem, 1.3vw, 1.55rem) clamp(1.8rem, 2.15vw, 2.5rem); }",
+      ".mirror-white-cards article > div { min-height: 500px; height: 100%; display: flex; flex-direction: column; align-items: flex-start; padding: clamp(1.05rem, 1.25vw, 1.45rem) clamp(1.05rem, 1.3vw, 1.55rem) clamp(1.8rem, 2.15vw, 2.5rem); }"
+    );
   fs.writeFileSync(path.join(root, "assets/template.css"), templateCss);
   copyFile(path.join(templateRoot, "assets/template.js"), path.join(root, "assets/template.js"));
   fs.appendFileSync(path.join(root, "assets/template.css"), `
@@ -643,6 +731,103 @@ function buildAssets() {
   border: 1px solid rgba(75, 23, 31, .18);
 }
 
+.mirror-faq-section {
+  padding: clamp(4.2rem, 6vw, 7rem) clamp(1rem, 7vw, 7rem);
+  background: #21120f;
+  color: #fffaf4;
+}
+
+.mirror-faq-shell {
+  width: min(1320px, 100%);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(280px, .76fr) minmax(0, 1.24fr);
+  gap: clamp(2.2rem, 4.8vw, 5.5rem);
+  align-items: start;
+}
+
+.mirror-faq-intro h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(3rem, 4.4vw, 5.8rem);
+  font-weight: 900;
+  line-height: .95;
+}
+
+.mirror-faq-intro p {
+  margin: clamp(1.4rem, 2vw, 2.2rem) 0 0;
+  color: rgba(255,250,244,.76);
+  font-size: clamp(1.08rem, 1.22vw, 1.42rem);
+  line-height: 1.42;
+}
+
+.mirror-faq-list {
+  display: grid;
+  gap: .85rem;
+}
+
+.mirror-faq-list details {
+  border: 1px solid rgba(255,250,244,.18);
+  border-radius: 8px;
+  background: #fffdf9;
+  color: #1a1110;
+  overflow: hidden;
+}
+
+.mirror-faq-list summary {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  cursor: pointer;
+  padding: 1rem clamp(1rem, 1.4vw, 1.45rem);
+  color: #17110e;
+  font-family: var(--serif);
+  font-size: clamp(1.12rem, 1.22vw, 1.42rem);
+  font-weight: 900;
+  line-height: 1.2;
+  list-style: none;
+}
+
+.mirror-faq-list summary::-webkit-details-marker {
+  display: none;
+}
+
+.mirror-faq-list summary::after {
+  content: "+";
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #7d0d19;
+  color: #fff;
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.mirror-faq-list details[open] summary::after {
+  content: "-";
+}
+
+.mirror-faq-list details > div {
+  padding: 0 clamp(1rem, 1.4vw, 1.45rem) clamp(1.1rem, 1.6vw, 1.55rem);
+}
+
+.mirror-faq-list p {
+  margin: 0 0 .85rem;
+  color: #2a211f;
+  font-size: clamp(1rem, 1.04vw, 1.18rem);
+  line-height: 1.46;
+}
+
+.mirror-faq-list p:last-child {
+  margin-bottom: 0;
+}
+
 @media (max-width: 680px) {
   .mirror-luxury-cta-person,
   .mirror-luxury-cta-woman {
@@ -666,6 +851,29 @@ function buildAssets() {
 
   .table-wrap tr {
     border-bottom: 1px solid rgba(72, 48, 42, .16);
+  }
+
+  .mirror-faq-section {
+    padding: 3.2rem 1rem;
+  }
+
+  .mirror-faq-shell {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .mirror-faq-intro h2 {
+    font-size: 2.35rem;
+    line-height: 1.08;
+  }
+
+  .mirror-faq-intro p {
+    font-size: 1rem;
+  }
+
+  .mirror-faq-list summary {
+    min-height: 58px;
+    font-size: 1.05rem;
   }
 }
 `);
@@ -710,15 +918,15 @@ function buildHome() {
     IMAGE_HERO_ALT: "Luxury Australian sugar mummy dating introduction scene",
     HERO_TITLE: "Sugar Mummy Dating in Australia",
     HERO_LEAD: "A selective adults-only space for mature women and younger partners who value discretion, emotional intelligence, long-term companionship, and real-world introductions.",
-    TRUST_TITLE: "A calmer standard for modern sugar mummy dating",
-    TRUST_CARD_TITLE_1: "Adults Only",
-    TRUST_CARD_COPY_1: "The site is written for adults aged 20 and over who can make independent relationship choices.",
-    TRUST_CARD_TITLE_2: "Respect First",
-    TRUST_CARD_COPY_2: "We reject coercion, pressure, escort-style framing, and short-term paid encounter language.",
-    TRUST_CARD_TITLE_3: "Privacy Aware",
-    TRUST_CARD_COPY_3: "Content encourages careful disclosure, public-first meetings, and discretion around work and family life.",
-    TRUST_CARD_TITLE_4: "Verification Mindset",
-    TRUST_CARD_COPY_4: "Real-person verification is treated as a membership standard for people who want higher-trust introductions.",
+    TRUST_TITLE: "How to Find a Sugar Mummy in Australia — 4 Simple Steps",
+    TRUST_CARD_TITLE_1: "Register",
+    TRUST_CARD_COPY_1: "Create your account and write a clear, confident bio. Add strong photos and mention what matters to you in Australia, from ambition and lifestyle to city fit, discretion, and taste.",
+    TRUST_CARD_TITLE_2: "Verify",
+    TRUST_CARD_COPY_2: "Use available verification signals to show you are real and serious. A trustworthy profile helps reduce fake conversations and gives sugar mummies more confidence before they reply.",
+    TRUST_CARD_TITLE_3: "Match",
+    TRUST_CARD_COPY_3: "Complete your profile, then explore people by location, interests, standards, and relationship goals. Sydney, Melbourne, Brisbane, Perth, Adelaide, and the Gold Coast each have their own dating rhythm.",
+    TRUST_CARD_TITLE_4: "Have Fun",
+    TRUST_CARD_COPY_4: "Move from messages to memorable, public-first moments when the connection feels right, whether that means dinner, a gallery opening, a coastal walk, or a weekend escape planned with care.",
     LISTING_TITLE: "Featured introduction paths",
     PROFILE_CTA_LABEL: "View Guide",
     LISTING_URL: "/sugar-mummy/",
@@ -744,33 +952,45 @@ function buildHome() {
     IMAGE_ARTICLE_ALT: "Elegant Australian lounge for mature dating conversations",
     FEATURES_TITLE: "Built for selective adult introductions",
     FEATURES_LEAD: "A quieter alternative to noisy dating apps, with practical safety content and city-specific guidance.",
-    FEATURE_TITLE_1: "Mature Women With Standards",
-    FEATURE_COPY_1: "For accomplished women who value privacy, emotional steadiness, and meaningful companionship without conventional relationship pressure.",
+    FEATURE_TITLE_1: "What Is a Sugar Mommy in Australia?",
+    FEATURE_COPY_1: [
+      "In Australia, a sugar mummy is often an accomplished, financially independent woman, such as a senior executive, entrepreneur, or respected professional. Her life is full and her standards are high, so she may want a fulfilling relationship dynamic that conventional dating does not always provide.",
+      "She values her time, privacy, and reputation. In a healthy sugar mummy connection, generosity, guidance, lifestyle compatibility, and sincere conversation can exist alongside mutual respect and clear boundaries. For many people, the appeal is less about material benefit alone and more about a discreet, low-conflict form of companionship.",
+      "This dynamic fits naturally with Australia's fast-moving, ambitious culture, where efficiency, status, and reputation all matter. The best version is adult, consensual, privacy-aware, and built around honest expectations rather than pressure."
+    ].join("</p><p>"),
     IMAGE_FEATURE_1: `/assets/images/${homeReplacementImages.benefit1}`,
     IMAGE_FEATURE_ALT_1: "Confident mature woman in a refined setting",
-    FEATURE_TITLE_2: "Younger Partners With Clarity",
-    FEATURE_COPY_2: "For attractive, emotionally intelligent adults who bring vitality, conversation, and long-term companionship rather than short-term demands.",
+    FEATURE_TITLE_2: "What Is a Male Sugar Baby in Australia?",
+    FEATURE_COPY_2: [
+      "In Australia, a male sugar baby is often ambitious, confident, and naturally charming. He is not simply a companion; he can add real value to a sugar mummy's life through emotional intelligence, thoughtful conversation, and attentive companionship.",
+      "Whether he is joining her at a private waterfront social event or giving her a calm place to step away from a demanding work life, he moves with ease, polish, and self-assurance. In return for loyalty, consistency, and genuine companionship, he may gain valuable guidance, broader perspective, and lifestyle experiences that align with his own aspirations.",
+      "At its best, this is a practical modern partnership built on respect, clear boundaries, and shared value. It suits Australia especially well because it values direct communication, personal ambition, privacy, and a relationship rhythm that both adults choose freely."
+    ].join("</p><p>"),
     IMAGE_FEATURE_2: `/assets/images/${homeReplacementImages.benefit2}`,
     IMAGE_FEATURE_ALT_2: "Younger adult partner in an elegant city setting",
-    FEATURE_TITLE_3: "Safety-Led Dating Culture",
-    FEATURE_COPY_3: "Guides, checklists, and standards help members avoid scams, protect privacy, and plan respectful first meetings.",
+    FEATURE_TITLE_3: "Benefits of Sugar Mummy Connections",
+    FEATURE_COPY_3: [
+      "Sugar mummies on our platform often want passion, adventure, and meaningful connection with someone who understands their pace of life. Many are mature, open-minded professionals who value conversation, laughter, relaxation, and real-world companionship.",
+      "For younger male sugar babies, the appeal can include guidance, broader perspective, refined social experiences, and a connection with a woman who knows what she wants. For sugar mummies, a charismatic younger partner can bring warmth, vitality, confidence, and attentive presence.",
+      "At its best, this relationship style is built on respect, clear boundaries, independence, and shared understanding. Join today to meet open-minded sugar mummies and sugar babies across Australia."
+    ].join("</p><p>"),
     IMAGE_FEATURE_3: `/assets/images/${homeReplacementImages.benefit3}`,
     IMAGE_FEATURE_ALT_3: "Public meeting place for discreet Australian dating",
     CITY_TITLE: "Sugar mummy dating across Australia",
     CITY_LEAD: "Explore city-specific guidance for public-first meetings, privacy, and local dating pace.",
     FAQ_TITLE: "Sugar Mummy Dating FAQs",
     FAQ_URL: "/help/",
-    FAQ_LEAD: "Clear answers about safety, verification, boundaries, cities, and what this relationship style is not.",
+    FAQ_LEAD: "Practical answers for Australia, covering expectations, privacy, support, local city rhythms, and respectful sugar mummy connections.",
     FAQ_BG_IMAGE: `/assets/images/${homeReplacementImages.faq}`,
-    HOW_TITLE: "How Australia Sugar Mummy works",
-    HOW_LEAD: "The site is designed around careful introductions, not rushed encounters.",
+    HOW_TITLE: "Why AustraliaSugarMummy.com.au?",
+    HOW_LEAD: "AustraliaSugarMummy.com.au is an upscale sugar mummy guide and registration path for Australian adults who want a polished, privacy-aware way to explore mature dating connections.",
     HOW_IMAGE: `/assets/images/${homeReplacementImages.how}`,
-    HOW_IMAGE_ALT: "Australian dating planning conversation",
+    HOW_IMAGE_ALT: "Upscale Australian sugar mummy dating features",
     HOW_IMAGE_CTA_LABEL: "Register Now",
     TRUST_URL: "/safety/",
     VERIFICATION_URL: "/anti-scam/",
-    TRUST_CTA_TITLE: "Read Safety & Trust",
-    VERIFICATION_CTA_TITLE: "Review Scam Warnings",
+    TRUST_CTA_TITLE: "",
+    VERIFICATION_CTA_TITLE: "",
     TESTIMONIALS_TITLE: "What users appreciate about Australia Sugar Mummy",
     TESTIMONIALS_BG_IMAGE: `/assets/images/${homeReplacementImages.testimonialsBg}`,
     TESTIMONIAL_SOURCE_1: "User feedback",
@@ -813,23 +1033,29 @@ function buildHome() {
   }
   for (let i = 1; i <= 12; i++) {
     const steps = [
-      ["Start with intent.", "Read the relationship standard and decide whether long-term value, discretion, and verification suit you."],
-      ["Choose your city.", "Use local pages to think through public venues, transport, and privacy before arranging a meeting."],
-      ["Create a respectful profile.", "Lead with values, boundaries, and the relationship rhythm you want."],
-      ["Keep early messages calm.", "Avoid pressure, money requests, rushed intimacy, and private-location demands."],
-      ["Verify before trust deepens.", "Treat real-person signals as a normal safety standard."],
-      ["Plan public-first meetings.", "Meet somewhere visible, time-limited, and easy to leave independently."],
-      ["Discuss expectations plainly.", "Talk about privacy, pace, communication, and what support means to both adults."],
-      ["Reject transactional framing.", "Do not use escort-style language or pay-per-meeting relationship models."],
-      ["Protect personal details.", "Hold back home, workplace, banking, and family details until trust is earned."],
-      ["Use safety resources.", "Review scam patterns before conversations become emotionally intense."],
-      ["Move offline only when aligned.", "The platform should support real meetings, not endless browsing."],
-      ["Leave when respect is missing.", "A mature connection should become clearer over time, not more coercive."]
+      ["9+ million members worldwide.", "Connect through an established dating community with a broad international audience, including Australian users."],
+      ["Free to join.", "Start with a basic profile and explore whether the platform fits your dating goals before going further."],
+      ["Verified members.", "Verification signals help serious users stand out and make early conversations feel more trustworthy."],
+      ["Fraud detection tools.", "Scam awareness, reporting, and profile review standards help reduce low-quality or unsafe behaviour."],
+      ["Live chatroom.", "Keep conversations moving with real-time chat features built for direct, respectful introductions."],
+      ["Advanced search.", "Filter by location, interests, lifestyle, standards, and relationship goals across Australian cities."],
+      ["Easy-to-use apps.", "Use a familiar mobile app experience when you prefer dating on the go."],
+      ["Mobile friendly.", "Browse, reply, and refine your profile from your phone without losing the polished experience."],
+      ["Australian first date ideas.", "Think harbour-side drinks, Melbourne galleries, Brisbane riverside walks, Perth lounges, or Gold Coast dining."],
+      ["Security and privacy protection.", "Protect personal details while you move carefully from profile interest to public-first meetings."],
+      ["Membership and billing support.", "Get help with account, subscription, and billing questions through official support channels."],
+      ["Customer service support.", "Reach out when you need help with account access, safety concerns, or member-experience issues."]
     ];
     data[`HOW_STEP_TITLE_${i}`] = steps[i - 1][0];
     data[`HOW_STEP_COPY_${i}`] = steps[i - 1][1];
   }
   let html = replaceAll(template, data);
+  html = html.replace(/\s*<a class="mirror-how-works-protection" href="\/safety\/"><\/a>/, "");
+  html = html.replace(/\s*<a class="mirror-how-works-verification" href="\/anti-scam\/"><\/a>/, "");
+  html = html.replace(
+    /    <section class="mirror-faq-hero"[\s\S]*?    <\/section>/,
+    `    ${renderHomeFaqSection()}`
+  );
   html = html.replace(
     /<a href="\/sugar-mummy\/">Sugar Mummy<\/a>\s*<a href="\/safety\/">Safety<\/a>\s*<a href="\/blog\/">Blog<\/a>\s*<a href="\/about\/">About<\/a>\s*<a href="\/contact\/">Contact<\/a>/,
     nav.map(([label, url]) => navLink(label, url, "/")).join("\n      ")
@@ -844,7 +1070,7 @@ function buildHome() {
     name: brand,
     url: domain,
     inLanguage: "en-AU"
-  })}</script>\n</head>`);
+  })}</script>\n  <script type="application/ld+json">${JSON.stringify(faqJsonLd())}</script>\n</head>`);
   writePage("/", html);
 }
 
