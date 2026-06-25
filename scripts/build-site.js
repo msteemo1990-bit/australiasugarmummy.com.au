@@ -431,7 +431,7 @@ function pageShell({ pathname, title, description, eyebrow, h1, lead, image, ima
   ${schema}
 </head>
 <body${pathname.startsWith("/blog/") ? ` class="blog-page"` : ""}>
-  ${header()}
+  ${header(pathname)}
   <main id="main">
     <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><span>${h1}</span></nav>
     <article class="article-layout">
@@ -454,13 +454,25 @@ function pageShell({ pathname, title, description, eyebrow, h1, lead, image, ima
   writePage(pathname, html);
 }
 
-function header() {
+function isActiveNav(pathname, url) {
+  if (pathname === url) return true;
+  if (url === "/sugar-mummy/" && pathname.startsWith("/sugar-mummy/")) return true;
+  if (url === "/blog/" && pathname.startsWith("/blog/")) return true;
+  return false;
+}
+
+function navLink(label, url, pathname) {
+  const current = isActiveNav(pathname, url) ? ` aria-current="page"` : "";
+  return `<a href="${url}"${current}>${label}</a>`;
+}
+
+function header(pathname) {
   return `<a class="skip-link" href="#main">Skip to main content</a>
   <header class="site-header">
     <a class="brand" href="/"><span>ASM</span>${brand}</a>
     <button class="mobile-nav-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="primary-navigation" data-nav-toggle><span></span><span></span><span></span></button>
     <nav class="site-nav" id="primary-navigation" aria-label="Primary navigation">
-      ${nav.map(([label, url]) => `<a href="${url}">${label}</a>`).join("")}
+      ${nav.map(([label, url]) => navLink(label, url, pathname)).join("")}
       <a class="nav-cta" href="${registrationUrl}" rel="nofollow">Register</a>
     </nav>
   </header>`;
@@ -496,7 +508,18 @@ function buildAssets() {
     background_color: "#4b171f",
     display: "standalone"
   }, null, 2) + "\n");
-  copyFile(path.join(templateRoot, "assets/template.css"), path.join(root, "assets/template.css"));
+  let templateCss = fs.readFileSync(path.join(templateRoot, "assets/template.css"), "utf8");
+  templateCss = templateCss.replace(
+    `.site-nav a:first-child {
+  color: #b97343;
+  border-bottom: 2px solid #b97343;
+}`,
+    `.site-nav a[aria-current="page"] {
+  color: #b97343;
+  border-bottom: 2px solid #b97343;
+}`
+  );
+  fs.writeFileSync(path.join(root, "assets/template.css"), templateCss);
   copyFile(path.join(templateRoot, "assets/template.js"), path.join(root, "assets/template.js"));
   fs.appendFileSync(path.join(root, "assets/template.css"), `
 
@@ -807,6 +830,10 @@ function buildHome() {
     data[`HOW_STEP_COPY_${i}`] = steps[i - 1][1];
   }
   let html = replaceAll(template, data);
+  html = html.replace(
+    /<a href="\/sugar-mummy\/">Sugar Mummy<\/a>\s*<a href="\/safety\/">Safety<\/a>\s*<a href="\/blog\/">Blog<\/a>\s*<a href="\/about\/">About<\/a>\s*<a href="\/contact\/">Contact<\/a>/,
+    nav.map(([label, url]) => navLink(label, url, "/")).join("\n      ")
+  );
   html = html.replace(/<a href="\{CITY_URL_\d+\}">\{CITY_NAME_\d+\}<\/a>/g, "");
   html = html.split(`href="${registrationUrl}"`).join(`href="${registrationUrl}" rel="nofollow"`);
   html = html.replace(/<img\b(?![^>]*\balt=)([^>]*)>/g, `<img alt="${brand} dating guide image"$1>`);

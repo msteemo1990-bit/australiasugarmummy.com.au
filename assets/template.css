@@ -165,7 +165,7 @@ img {
   white-space: nowrap;
 }
 
-.site-nav a:first-child {
+.site-nav a[aria-current="page"] {
   color: #b97343;
   border-bottom: 2px solid #b97343;
 }
